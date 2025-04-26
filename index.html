@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Banco Simples</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        input, button { margin: 5px; padding: 8px; }
+        #menu, #conta { display: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Banco Digital</h1>
+
+<div id="inicio">
+    <button onclick="mostrarCadastro()">Cadastrar</button>
+    <button onclick="mostrarLogin()">Login</button>
+</div>
+
+<div id="cadastro">
+    <h2>Cadastro</h2>
+    <input type="text" id="novoUsuario" placeholder="Usuário"><br>
+    <input type="password" id="novaSenha" placeholder="Senha"><br>
+    <input type="number" id="novoSaldo" placeholder="Saldo inicial"><br>
+    <button onclick="cadastrar()">Cadastrar Usuário</button>
+    <button onclick="voltar()">Voltar</button>
+</div>
+
+<div id="login">
+    <h2>Login</h2>
+    <input type="text" id="usuarioLogin" placeholder="Usuário"><br>
+    <input type="password" id="senhaLogin" placeholder="Senha"><br>
+    <button onclick="logar()">Entrar</button>
+    <button onclick="voltar()">Voltar</button>
+</div>
+
+<div id="menu">
+    <h2 id="boasVindas"></h2>
+    <button onclick="verSaldo()">Ver Saldo</button>
+    <button onclick="depositar()">Depositar</button>
+    <button onclick="sacar()">Sacar</button>
+    <button onclick="sair()">Sair</button>
+</div>
+
+<div id="conta">
+    <h2>Informações da Conta</h2>
+    <p id="infoConta"></p>
+</div>
+
+<script>
+    let usuarioAtual = null;
+
+    function mostrarCadastro() {
+        document.getElementById('inicio').style.display = 'none';
+        document.getElementById('cadastro').style.display = 'block';
+    }
+
+    function mostrarLogin() {
+        document.getElementById('inicio').style.display = 'none';
+        document.getElementById('login').style.display = 'block';
+    }
+
+    function voltar() {
+        document.getElementById('cadastro').style.display = 'none';
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('inicio').style.display = 'block';
+    }
+
+    function cadastrar() {
+        const usuario = document.getElementById('novoUsuario').value;
+        const senha = document.getElementById('novaSenha').value;
+        const saldo = parseFloat(document.getElementById('novoSaldo').value);
+
+        if (usuario && senha && !isNaN(saldo)) {
+            let banco = JSON.parse(localStorage.getItem('banco')) || {};
+
+            if (banco[usuario]) {
+                alert('Usuário já existe!');
+            } else {
+                banco[usuario] = { senha: senha, saldo: saldo };
+                localStorage.setItem('banco', JSON.stringify(banco));
+                alert('Usuário cadastrado!');
+                voltar();
+            }
+        } else {
+            alert('Preencha todos os campos!');
+        }
+    }
+
+    function logar() {
+        const usuario = document.getElementById('usuarioLogin').value;
+        const senha = document.getElementById('senhaLogin').value;
+
+        let banco = JSON.parse(localStorage.getItem('banco')) || {};
+
+        if (banco[usuario] && banco[usuario].senha === senha) {
+            usuarioAtual = usuario;
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+            document.getElementById('boasVindas').innerText = `Bem-vindo, ${usuario}!`;
+        } else {
+            alert('Usuário ou senha incorretos!');
+        }
+    }
+
+    function verSaldo() {
+        let banco = JSON.parse(localStorage.getItem('banco'));
+        const saldo = banco[usuarioAtual].saldo.toFixed(2);
+        document.getElementById('infoConta').innerText = `Seu saldo é R$ ${saldo}`;
+        document.getElementById('conta').style.display = 'block';
+    }
+
+    function depositar() {
+        let valor = parseFloat(prompt('Quanto deseja depositar?'));
+        if (!isNaN(valor) && valor > 0) {
+            let banco = JSON.parse(localStorage.getItem('banco'));
+            banco[usuarioAtual].saldo += valor;
+            localStorage.setItem('banco', JSON.stringify(banco));
+            alert('Depósito feito!');
+            verSaldo();
+        } else {
+            alert('Valor inválido!');
+        }
+    }
+
+    function sacar() {
+        let valor = parseFloat(prompt('Quanto deseja sacar?'));
+        let banco = JSON.parse(localStorage.getItem('banco'));
+
+        if (!isNaN(valor) && valor > 0) {
+            if (valor > banco[usuarioAtual].saldo) {
+                alert('Saldo insuficiente!');
+            } else {
+                banco[usuarioAtual].saldo -= valor;
+                localStorage.setItem('banco', JSON.stringify(banco));
+                alert('Saque feito!');
+                verSaldo();
+            }
+        } else {
+            alert('Valor inválido!');
+        }
+    }
+
+    function sair() {
+        usuarioAtual = null;
+        document.getElementById('menu').style.display = 'none';
+        document.getElementById('conta').style.display = 'none';
+        document.getElementById('inicio').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
